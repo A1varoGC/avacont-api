@@ -1,11 +1,25 @@
+// ===========================
+// 🌐 AVACONT API - PRODUCCIÓN
+// ===========================
 import express from "express";
 import fetch from "node-fetch";
 import cors from "cors";
 
 const app = express();
-app.use(cors());
 
-// 🔑 Reemplaza este token por el tuyo real de Decolecta
+// ✅ Habilitar CORS solo para tus dominios autorizados
+app.use(
+  cors({
+    origin: [
+      "https://avacont-prueba.avantia.dev", // Tu dominio público
+      "http://localhost:3000"               // Permite pruebas locales
+    ],
+    methods: ["GET"],
+    allowedHeaders: ["Content-Type"]
+  })
+);
+
+// 🔑 Token de autenticación de Decolecta
 const TOKEN = "sk_10862.Ms3HRKnVyvESQWwIbgPjokM6REQGQesP";
 
 // 🚀 Ruta principal (verificación)
@@ -16,7 +30,9 @@ app.get("/", (req, res) => {
 // 🧾 Ruta para consultar datos de RUC
 app.get("/ruc", async (req, res) => {
   const numero = req.query.numero;
-  if (!numero) return res.status(400).json({ error: "Falta número de RUC" });
+  if (!numero) {
+    return res.status(400).json({ error: "Falta número de RUC" });
+  }
 
   try {
     const url = `https://api.decolecta.com/v1/sunat/ruc?numero=${numero}&token=${TOKEN}`;
@@ -45,9 +61,9 @@ app.get("/ruc", async (req, res) => {
   }
 });
 
-// ⚙️ Iniciar servidor
-const PORT = 3000;
+// ⚙️ Render asigna el puerto automáticamente
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Servidor corriendo en puerto ${PORT}`);
+  console.log(`🚀 Servidor AVACONT API corriendo en puerto ${PORT}`);
 });
 
