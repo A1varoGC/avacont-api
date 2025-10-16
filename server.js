@@ -1,45 +1,40 @@
-// ===========================
-// 🌐 AVACONT API - PRODUCCIÓN
-// ===========================
 import express from "express";
 import fetch from "node-fetch";
 import cors from "cors";
 
 const app = express();
 
-// ✅ Habilitar CORS solo para tus dominios autorizados
+// ✅ CORS correctamente configurado
 app.use(
   cors({
     origin: [
-      "https://avacont-prueba.avantia.dev", // Tu dominio público
-      "http://localhost:3000"               // Permite pruebas locales
+      "https://avacont-prueba.avantia.dev", // dominio de tu sitio
+      "https://avantia.dev",                // dominio principal
+      "http://localhost:3000"               // entorno local (opcional)
     ],
     methods: ["GET"],
-    allowedHeaders: ["Content-Type"]
+    allowedHeaders: ["Content-Type"],
   })
 );
 
-// 🔑 Token de autenticación de Decolecta
-const TOKEN = "sk_10862.Ms3HRKnVyvESQWwIbgPjokM6REQGQesP";
+// 🔑 Token desde Render (variable de entorno)
+const TOKEN = process.env.TOKEN_API;
 
-// 🚀 Ruta principal (verificación)
+// 🚀 Ruta de verificación
 app.get("/", (req, res) => {
   res.send("Servidor AVACONT activo ✅");
 });
 
-// 🧾 Ruta para consultar datos de RUC
+// 🧾 Ruta para consulta de RUC
 app.get("/ruc", async (req, res) => {
   const numero = req.query.numero;
-  if (!numero) {
-    return res.status(400).json({ error: "Falta número de RUC" });
-  }
+  if (!numero) return res.status(400).json({ error: "Falta número de RUC" });
 
   try {
     const url = `https://api.decolecta.com/v1/sunat/ruc?numero=${numero}&token=${TOKEN}`;
     const response = await fetch(url);
     const data = await response.json();
 
-    // Si la API devuelve "razon_social", usamos esa estructura
     if (data && data.razon_social) {
       res.json({
         ruc: data.numero_documento,
@@ -49,10 +44,9 @@ app.get("/ruc", async (req, res) => {
         condicion: data.condicion,
         distrito: data.distrito,
         provincia: data.provincia,
-        departamento: data.departamento
+        departamento: data.departamento,
       });
     } else {
-      // Si la API devuelve otro formato o error
       res.status(404).json({ error: "RUC no encontrado", detalle: data });
     }
   } catch (err) {
@@ -61,9 +55,10 @@ app.get("/ruc", async (req, res) => {
   }
 });
 
-// ⚙️ Render asigna el puerto automáticamente
+// ⚙️ Render asigna su propio puerto
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Servidor AVACONT API corriendo en puerto ${PORT}`);
 });
+
 
