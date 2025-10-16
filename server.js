@@ -4,28 +4,35 @@ import cors from "cors";
 
 const app = express();
 
-// ✅ CORS correctamente configurado
-app.use(
-  cors({
-    origin: [
-      "https://avacont-prueba.avantia.dev", // dominio de tu sitio
-      "https://avantia.dev",                // dominio principal
-      "http://localhost:3000"               // entorno local (opcional)
-    ],
-    methods: ["GET"],
-    allowedHeaders: ["Content-Type"],
-  })
-);
+// ✅ CONFIGURACIÓN SEGURA DE CORS
+const allowedOrigins = [
+  "https://avacont-prueba.avantia.dev", // tu dominio real
+  "https://avantia.dev",                // dominio raíz
+  "http://127.0.0.1:5500",              // Live Server (opcional)
+  "http://localhost:5500"               // Live Server (opcional)
+];
 
-// 🔑 Token desde Render (variable de entorno)
-const TOKEN = process.env.TOKEN_API;
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.warn("🚫 Bloqueado por CORS:", origin);
+      callback(new Error("Origen no permitido por CORS"));
+    }
+  },
+  credentials: true,
+}));
 
-// 🚀 Ruta de verificación
+// 🔑 Token de Decolecta (usa tu variable de entorno TOKEN_API)
+const TOKEN = process.env.TOKEN_API || "sk_10862.Ms3HRKnVyvESQWwIbgPjokM6REQGQesP";
+
+// 🚀 Ruta de prueba
 app.get("/", (req, res) => {
   res.send("Servidor AVACONT activo ✅");
 });
 
-// 🧾 Ruta para consulta de RUC
+// 🧾 Ruta de consulta de RUC
 app.get("/ruc", async (req, res) => {
   const numero = req.query.numero;
   if (!numero) return res.status(400).json({ error: "Falta número de RUC" });
@@ -44,7 +51,7 @@ app.get("/ruc", async (req, res) => {
         condicion: data.condicion,
         distrito: data.distrito,
         provincia: data.provincia,
-        departamento: data.departamento,
+        departamento: data.departamento
       });
     } else {
       res.status(404).json({ error: "RUC no encontrado", detalle: data });
@@ -55,10 +62,8 @@ app.get("/ruc", async (req, res) => {
   }
 });
 
-// ⚙️ Render asigna su propio puerto
+// ⚙️ Iniciar servidor
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor AVACONT API corriendo en puerto ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Servidor corriendo en puerto ${PORT}`));
 
 
