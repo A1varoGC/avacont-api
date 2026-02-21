@@ -7,6 +7,7 @@ const app = express();
 // ✅ CONFIGURACIÓN SEGURA DE CORS
 const allowedOrigins = [
   "https://avacont-prueba.avantia.dev", // tu dominio real
+  "https://prueba.avacont.es",
   "https://avantia.dev",                // dominio raíz
   "http://127.0.0.1:5500",              // Live Server (opcional)
   "http://localhost:5500",               // Live Server (opcional)
